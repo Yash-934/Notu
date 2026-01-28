@@ -1,67 +1,47 @@
 
-# NOTU - Blueprint
+# NOTU - A Minimalist Note-Taking App
 
 ## Overview
 
-NOTU is a note-taking application for Flutter that allows users to organize their notes in a hierarchical structure, similar to books and chapters. The app supports rich text formatting using Markdown and HTML/CSS.
+NOTU is a minimalist note-taking application designed for writers, students, and anyone who needs a simple, elegant tool to capture their thoughts and ideas. The app is built with Flutter and uses a local SQLite database for data persistence, ensuring that your notes are always available, even offline.
 
-## Features
+## Style, Design, and Features
 
-### Core
-- **Book and Chapter Organization**: Notes are organized into books, which contain chapters.
-- **Rich Text Editing**: Support for Markdown and HTML/CSS in notes.
-- **Cross-platform**: Built with Flutter for a consistent experience on mobile and web.
-- **Add New Books**: Users can create new books.
-- **Add New Chapters**: Users can add new chapters to a book.
+### Design and Theming
 
-### Style & Design
-- **Theme**: Modern, clean theme with support for light and dark modes.
-- **Typography**: Clear and readable fonts.
-- **Layout**: Intuitive and responsive layout.
+*   **Modern & Minimalist UI:** The app features a clean and modern design with a focus on readability and ease of use.
+*   **Light & Dark Modes:** A user-selectable theme allows for switching between light and dark modes.
+*   **Custom Fonts:** The app uses Google Fonts to provide a unique and elegant typography.
+    *   **Headlines:** `Playfair Display`
+    *   **Titles:** `Lato`
+    *   **Body:** `Open Sans`
+*   **Consistent Color Scheme:** A consistent color scheme is used throughout the app, with `Colors.teal` as the primary seed color.
+*   **Smooth Transitions:** The `animations` package is used to provide beautiful and seamless transitions between screens.
+*   **Polished Add Book Screen:** The "Add Book" screen has been redesigned with a modern and polished look, featuring a `Card` layout, improved spacing, and a circular avatar for the thumbnail preview.
+
+### Core Features
+
+*   **Offline First:** All data is stored locally in an SQLite database, making the app fully functional offline.
+*   **Books and Chapters:** Organize your notes into books and chapters.
+*   **Book Thumbnails:** Users can add a thumbnail image to each book, which is displayed in a beautiful grid view.
+*   **CRUD Operations:** Full Create, Read, Update, and Delete functionality for both books and chapters.
+*   **Markdown and HTML Support:** Chapter content can be written in either Markdown or HTML/CSS/JS.
+    *   The `webview_flutter` package is used to render HTML content.
+*   **Polished UX:**
+    *   **Snackbars:** Provide visual feedback for actions like adding, deleting, and updating items.
+    *   **Haptic Feedback:** Subtle haptic feedback enhances the user experience.
+    *   **Empty States:** Beautiful and informative "empty state" screens guide the user when there is no content.
+*   **State Management:** The app uses a combination of `StatefulWidget` and `ChangeNotifierProvider` for state management.
 
 ## Current Plan
 
-### Phase 4: Chapter Management
-
-1.  **Add New Chapter FAB**: Add a `FloatingActionButton` to the `BookDetailsScreen`.
-2.  **Add Chapter Screen**: Create a new screen `lib/screens/add_chapter_screen.dart` with a form to enter a chapter title and content.
-3.  **State Management for Chapters**: Update `BookDetailsScreen` to be a `StatefulWidget` to manage the list of chapters.
-4.  **Implement Add Chapter Logic**: Add logic to the `AddChapterScreen` to create a new chapter and add it to the book.
-
-### Phase 3: Core Functionality (Completed)
-
-1.  **Add New Book FAB**: Add a `FloatingActionButton` to the home page.
-2.  **Add Book Screen**: Create a new screen `lib/screens/add_book_screen.dart` with a form to enter a book title.
-3.  **State Management for Books**: Update `MyHomePage` to be a `StatefulWidget` to manage the list of books.
-4.  **Implement Add Book Logic**: Add logic to the `AddBookScreen` to create a new book and add it to the list.
-
-### Phase 2: Visual Polish (Completed)
-
-1.  **Add `google_fonts`**: Include the `google_fonts` package for custom typography.
-2.  **Enhance Theme**:
-    - Update `lib/main.dart` to use Material 3 theming with `ColorScheme.fromSeed`.
-    - Create a custom `TextTheme` using `google_fonts` (e.g., Oswald, Roboto, Open Sans).
-    - Customize `appBarTheme` and other component themes for a consistent look.
-    - Apply the new typography and styles throughout the app.
-
-### Phase 1: Project Setup & Basic UI (Completed)
-
-1.  **Initialize Project**: Set up a new Flutter project.
-2.  **Add Dependencies**:
-    - `flutter_markdown`: For rendering Markdown content.
-    - `provider`: For state management.
-3.  **Create `blueprint.md`**: Document the project plan and features.
-4.  **Basic App Structure**:
-    - Modify `lib/main.dart` with the app title "NOTU".
-    - Create a basic home page.
-    - Implement a simple theme.
-5.  **Data Models**:
-    - Create `lib/models/book.dart` for the book data structure.
-    - Create `lib/models/chapter.dart` for the chapter data structure.
-6.  **Display Books**: Update the home page to display a list of sample books.
-7.  **Book Details Screen**:
-    - Create `lib/screens/book_details_screen.dart` to display a book's chapters.
-    - Implement navigation from the home page to the details screen.
-8.  **Chapter Details Screen**:
-    - Create `lib/screens/chapter_details_screen.dart` to display chapter content.
-    - Implement navigation from the book details screen to the chapter details screen.
+*   **Implement HTML/CSS/JS Support:** The user has requested the ability to add notes in HTML, CSS, and JavaScript. This involved:
+    *   Adding the `webview_flutter` dependency.
+    *   Updating the `Chapter` model and `DatabaseHelper` to include a `contentType` field.
+    *   Modifying the `AddChapterScreen` to allow users to select the content type.
+    *   Updating the `ChapterDetailsScreen` to render HTML content using a `WebView`.
+*   **Enhance Visual Design:** The `AddBookScreen` has been redesigned for a more modern and polished user experience.
+*   **Next Steps:**
+    *   Continue to refine the visual design of the app.
+    *   Add more interactive elements and animations.
+    *   Implement a search functionality to easily find notes.

@@ -1,26 +1,33 @@
 
 import 'package:flutter/material.dart';
-import 'package:myapp/models/chapter.dart';
+import 'package:notu/models/chapter.dart';
 
 class AddChapterScreen extends StatefulWidget {
+  final int bookId;
   final Function(Chapter) onAddChapter;
 
-  const AddChapterScreen({super.key, required this.onAddChapter});
+  const AddChapterScreen({super.key, required this.bookId, required this.onAddChapter});
 
   @override
   State<AddChapterScreen> createState() => _AddChapterScreenState();
 }
 
 class _AddChapterScreenState extends State<AddChapterScreen> {
-  final _formKey = GlobalKey<FormState>();
-  String _title = '';
-  String _content = '';
+  final _titleController = TextEditingController();
+  final _contentController = TextEditingController();
+  ContentType _contentType = ContentType.markdown;
 
-  void _submit() {
-    if (_formKey.currentState!.validate()) {
-      _formKey.currentState!.save();
-      widget.onAddChapter(Chapter(title: _title, content: _content));
-      Navigator.of(context).pop();
+  void _saveChapter() {
+    final title = _titleController.text;
+    if (title.isNotEmpty) {
+      final newChapter = Chapter(
+        bookId: widget.bookId,
+        title: title,
+        content: _contentController.text,
+        contentType: _contentType,
+      );
+      widget.onAddChapter(newChapter);
+      Navigator.pop(context);
     }
   }
 
@@ -28,51 +35,51 @@ class _AddChapterScreenState extends State<AddChapterScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Add New Chapter'),
+        title: const Text('Add a New Chapter'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              TextFormField(
-                decoration: const InputDecoration(
-                  labelText: 'Chapter Title',
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter a title';
-                  }
-                  return null;
-                },
-                onSaved: (value) {
-                  _title = value!;
-                },
+        child: Column(
+          children: [
+            TextField(
+              controller: _titleController,
+              decoration: const InputDecoration(
+                labelText: 'Chapter Title',
+                border: OutlineInputBorder(),
               ),
-              const SizedBox(height: 10),
-              TextFormField(
-                decoration: const InputDecoration(
-                  labelText: 'Chapter Content (Markdown)',
-                ),
-                maxLines: 10,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter content';
-                  }
-                  return null;
-                },
-                onSaved: (value) {
-                  _content = value!;
-                },
+            ),
+            const SizedBox(height: 20),
+            SegmentedButton<ContentType>(
+              segments: const [
+                ButtonSegment(value: ContentType.markdown, label: Text('Markdown')),
+                ButtonSegment(value: ContentType.html, label: Text('HTML')),
+              ],
+              selected: {_contentType},
+              onSelectionChanged: (newSelection) {
+                setState(() {
+                  _contentType = newSelection.first;
+                });
+              },
+            ),
+            const SizedBox(height: 20),
+            TextField(
+              controller: _contentController,
+              decoration: InputDecoration(
+                labelText: _contentType == ContentType.markdown ? 'Content (Markdown)' : 'Content (HTML/CSS/JS)',
+                border: const OutlineInputBorder(),
               ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _submit,
-                child: const Text('Add Chapter'),
+              maxLines: 10,
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton.icon(
+              onPressed: _saveChapter,
+              icon: const Icon(Icons.check),
+              label: const Text('Save Chapter'),
+              style: ElevatedButton.styleFrom(
+                minimumSize: const Size(double.infinity, 50),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

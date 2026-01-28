@@ -1,6 +1,9 @@
 
+import 'dart:io';
+
 import 'package:flutter/material.dart';
-import 'package:myapp/models/book.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:notu/models/book.dart';
 
 class AddBookScreen extends StatefulWidget {
   final Function(Book) onAddBook;
@@ -12,14 +15,25 @@ class AddBookScreen extends StatefulWidget {
 }
 
 class _AddBookScreenState extends State<AddBookScreen> {
-  final _formKey = GlobalKey<FormState>();
-  String _title = '';
+  final _titleController = TextEditingController();
+  String? _thumbnailPath;
 
-  void _submit() {
-    if (_formKey.currentState!.validate()) {
-      _formKey.currentState!.save();
-      widget.onAddBook(Book(title: _title, chapters: []));
-      Navigator.of(context).pop();
+  Future<void> _pickImage() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      setState(() {
+        _thumbnailPath = pickedFile.path;
+      });
+    }
+  }
+
+  void _saveBook() {
+    final title = _titleController.text;
+    if (title.isNotEmpty) {
+      widget.onAddBook(Book(title: title, thumbnail: _thumbnailPath));
+      Navigator.pop(context);
     }
   }
 
@@ -27,34 +41,52 @@ class _AddBookScreenState extends State<AddBookScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Add New Book'),
+        title: const Text('Add a New Book'),
+        elevation: 0,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              TextFormField(
-                decoration: const InputDecoration(
-                  labelText: 'Book Title',
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter a title';
-                  }
-                  return null;
-                },
-                onSaved: (value) {
-                  _title = value!;
-                },
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Card(
+            elevation: 8.0,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
+            child: Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  GestureDetector(
+                    onTap: _pickImage,
+                    child: CircleAvatar(
+                      radius: 80,
+                      backgroundColor: Colors.grey[200],
+                      backgroundImage: _thumbnailPath != null ? FileImage(File(_thumbnailPath!)) : null,
+                      child: _thumbnailPath == null
+                          ? Icon(Icons.add_a_photo, size: 50, color: Colors.grey[400])
+                          : null,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  TextField(
+                    controller: _titleController,
+                    decoration: const InputDecoration(
+                      labelText: 'Book Title',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  ElevatedButton.icon(
+                    onPressed: _saveBook,
+                    icon: const Icon(Icons.check),
+                    label: const Text('Save Book'),
+                    style: ElevatedButton.styleFrom(
+                      minimumSize: const Size(double.infinity, 50),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _submit,
-                child: const Text('Add Book'),
-              ),
-            ],
+            ),
           ),
         ),
       ),
