@@ -118,72 +118,62 @@ class _MyHomePageState extends State<MyHomePage> {
     _booksFuture = dbHelper.getBooks();
   }
 
-  void _addBook(Book book) {
-    dbHelper.insertBook(book).then((_) {
-      setState(() {
-        _booksFuture = dbHelper.getBooks();
-      });
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Book added!')),
-        );
-      }
+  Future<void> _addBook(Book book) async {
+    await dbHelper.insertBook(book);
+    if (!mounted) return;
+    setState(() {
+      _booksFuture = dbHelper.getBooks();
     });
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Book added!')),
+    );
   }
 
-  void _deleteBook(int id) {
-    dbHelper.deleteBook(id).then((_) {
-      setState(() {
-        _booksFuture = dbHelper.getBooks();
-      });
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Book deleted!')),
-        );
-      }
+  Future<void> _deleteBook(int id) async {
+    await dbHelper.deleteBook(id);
+    if (!mounted) return;
+    setState(() {
+      _booksFuture = dbHelper.getBooks();
     });
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Book deleted!')),
+    );
   }
 
-  void _editBook(Book book) {
-    dbHelper.updateBook(book).then((_) {
-      setState(() {
-        _booksFuture = dbHelper.getBooks();
-      });
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Book updated!')),
-        );
-      }
+  Future<void> _editBook(Book book) async {
+    await dbHelper.updateBook(book);
+    if (!mounted) return;
+    setState(() {
+      _booksFuture = dbHelper.getBooks();
     });
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Book updated!')),
+    );
   }
 
   void _importBook() async {
     final success = await bookImporterExporter.importBook();
+    if (!mounted) return;
     if (success) {
       setState(() {
         _booksFuture = dbHelper.getBooks();
       });
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Book imported!')),
-        );
-      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Book imported!')),
+      );
     } else {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Import failed.')),
-        );
-      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Import failed.')),
+      );
     }
   }
 
-  void _exportBook(Book book) async {
+  Future<void> _exportBook(Book book) async {
     final success = await bookImporterExporter.exportBook(book);
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(success ? 'Book exported!' : 'Export failed.')),
-      );
-    }
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(success ? 'Book exported!' : 'Export failed.')),
+    );
   }
 
   @override
@@ -252,7 +242,9 @@ class _MyHomePageState extends State<MyHomePage> {
               itemBuilder: (context, index) {
                 final book = books[index];
                 return GestureDetector(
-                  onLongPressStart: (details) => _showBookContextMenu(context, book, details.globalPosition),
+                  onLongPressStart: (details) {
+                    _showBookContextMenu(context, book, details.globalPosition);
+                  },
                   child: OpenContainer(
                       transitionType: ContainerTransitionType.fade,
                       transitionDuration: const Duration(milliseconds: 500),
@@ -277,8 +269,12 @@ class _MyHomePageState extends State<MyHomePage> {
                       openBuilder: (BuildContext context, void Function() action) {
                         return BookDetailsScreen(
                           book: book,
-                          onBookUpdate: _editBook,
-                          onBookDelete: () => _deleteBook(book.id!),
+                          onBookUpdate: (updatedBook) {
+                            _editBook(updatedBook);
+                          },
+                          onBookDelete: () {
+                            _deleteBook(book.id!);
+                          },
                         );
                       }),
                 );
@@ -293,7 +289,9 @@ class _MyHomePageState extends State<MyHomePage> {
             context,
             MaterialPageRoute(
               builder: (context) {
-                return AddBookScreen(onAddBook: _addBook);
+                return AddBookScreen(onAddBook: (newBook) {
+                  _addBook(newBook);
+                });
               },
             ),
           );
@@ -329,7 +327,7 @@ class _MyHomePageState extends State<MyHomePage> {
         _showEditBookDialog(context, book);
         break;
       case 'delete':
-        _deleteBook(book.id!);
+         _deleteBook(book.id!);
         break;
       case 'export':
         _exportBook(book);
@@ -340,9 +338,9 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
-  void _showBookContextMenu(BuildContext context, Book book, Offset tapPosition) {
+  void _showBookContextMenu(BuildContext context, Book book, Offset tapPosition) async {
     final RenderBox overlay = Overlay.of(context).context.findRenderObject() as RenderBox;
-    showMenu<String>(
+    final value = await showMenu<String>(
       context: context,
       position: RelativeRect.fromRect(
         Rect.fromLTWH(tapPosition.dx, tapPosition.dy, 0, 0),
@@ -367,11 +365,11 @@ class _MyHomePageState extends State<MyHomePage> {
           child: Text('Import'),
         ),
       ],
-    ).then((value) {
-      if (value != null) {
-        _handleContextMenuSelection(value, book);
-      }
-    });
+    );
+
+    if (value != null) {
+      _handleContextMenuSelection(value, book);
+    }
   }
 
   void _showEditBookDialog(BuildContext context, Book book) {
@@ -380,7 +378,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
     showDialog(
       context: context,
-      builder: (context) {
+      builder: (dialogContext) {
         return AlertDialog(
           title: const Text('Edit Book'),
           content: StatefulBuilder(
@@ -418,7 +416,7 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context),
+              onPressed: () => Navigator.pop(dialogContext),
               child: const Text('Cancel'),
             ),
             TextButton(
@@ -426,7 +424,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 final newTitle = titleController.text;
                 if (newTitle.isNotEmpty) {
                   _editBook(Book(id: book.id, title: newTitle, thumbnail: thumbnailPath));
-                  Navigator.pop(context);
+                  Navigator.pop(dialogContext);
                 }
               },
               child: const Text('Save'),
